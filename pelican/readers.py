@@ -17,6 +17,7 @@ import re
 
 try:
     import yaml
+    Yaml = True # NOQA
 except ImportError:
     Yaml = False # NOQA
 
@@ -167,13 +168,12 @@ class HtmlReader(Reader):
 class YamlReader(Reader):
     enabled = bool(Yaml)
     file_extensions = ['yml']
-
     def read(self, filename):
         """Parse content and metadata of YAML files"""
         raw = open(filename).read()
         docs = []
         metadata = {}
-        raw_doc = raw.split('---')
+        raw_doc = raw.split('---', 2)
         docs.append(yaml.load(raw_doc[1]))
 
         md = docs[0]
@@ -187,14 +187,14 @@ class YamlReader(Reader):
             if name == "tags":
                 tags = ''
                 for item in value:
-                    tags = tags + ", " + item
+                    tags = tags + ", " + unicode(item)
                 metadata[name] = self.process_metadata(name, tags)
             else:
-                metadata[name] = self.process_metadata(name, value)
+                metadata[name] = self.process_metadata(name, unicode(value))
 
         udata = raw_doc[2].decode("utf-8")
-        asciidata = udata.encode("ascii", "ignore")
-        return asciidata, metadata
+        # asciidata = udata.encode("ascii", "ignore")
+        return udata, metadata
 
 _EXTENSIONS = {}
 
